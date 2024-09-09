@@ -25,3 +25,9 @@
 1. 克隆仓库：
    ```bash
    git clone https://github.com/HappyLee11/ReactorHttp.git
+2. 运行服务器：
+   `cd /path/to/your/project/bin  //cd 到项目的 bin 目录`
+   `./ChatServer 127.0.0.1 6000  //启动聊天服务器`
+   `./ChatClient 127.0.0.1 8000 //启动聊天客户端`
+
+
