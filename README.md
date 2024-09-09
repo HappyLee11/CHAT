@@ -20,14 +20,60 @@
 - 使用 `mysql` 作为项目的数据存储，结合连接池提高数据库存取性能。
 - 通过 `jmeter` 等工具测试服务器的并发性能，优化系统的并发处理能力。
 
+## 项目架构
+- Muduo 网络库：用于高效管理并发连接，处理 I/O 多路复用。
+- Redis：用于跨服务器消息通信，特别是在分布式环境中保证消息一致性。
+- MySQL：作为持久化存储，记录用户、消息、群组等信息。
+- Nginx：作为负载均衡器，分发客户端请求到多个服务器实例，确保系统的高可用性和高并发处理能力。
 
+## 负载均衡与扩展
+为了在高并发环境下支持更多的用户和请求，项目中配置了基于 TCP 的 nginx 负载均衡。配置示例如下：
+```bash
+stream {
+    upstream chat_server {
+        server 127.0.0.1:6000 weight=1;
+        server 127.0.0.1:6001 weight=1;
+    }
+
+    server {
+        listen 8000;
+        proxy_pass chat_server;
+        proxy_timeout 3s;
+        proxy_connect_timeout 1s;
+    }
+}
+这个配置通过 nginx 的 stream 模块对多个服务器实例进行负载均衡，分发 TCP 连接到后端的 ChatServer 实例。
+```
+## 开发环境
+- 操作系统：Ubuntu 20.04 / Debian 10
+- 开发工具：VSCode / Vim
+- 编程语言：C++
+-数据库：MySQL 8.x
+-消息中间件：Redis 5.x
+- 负载均衡：Nginx 1.18.x
+  
 ## 使用方法
 1. 克隆仓库：
    ```bash
    git clone https://github.com/HappyLee11/ReactorHttp.git
 2. 运行服务器：
-   `cd /path/to/your/project/bin  //cd 到项目的 bin 目录`
-   `./ChatServer 127.0.0.1 6000  //启动聊天服务器`
-   `./ChatClient 127.0.0.1 8000 //启动聊天客户端`
+   ```bash
+   cd /path/to/your/project/bin  //cd 到项目的 bin 目录
+   ./ChatServer 127.0.0.1 6000  //启动聊天服务器
+   ./ChatClient 127.0.0.1 8000 //启动聊天客户端
 
+
+## 测试与性能优化
+1. 并发性能测试： 
+为了验证服务器在高并发情况下的表现，使用 JMeter 或 ab (Apache Bench) 工具进行压力测试。通过设置测试的用户数量、并发连接数以及消息发送频率，测量服务器的性能表现，并根据测试结果进行优化。
+
+2. 文件描述符和系统资源的调优： 
+在高并发环境下，需要确保操作系统可以处理大量的文件描述符。可以通过以下命令增加系统允许打开的文件描述符数量：
+```bash
+ulimit -n 100000
+```
+你还可以修改 `/etc/security/limits.conf` 文件来永久增加文件描述符的限制。
+
+3. 数据库连接池优化： 
+项目中使用了数据库连接池，可以通过调整连接池的大小和超时时间来提高数据库的访问性能。建议根据系统的负载和并发需求动态调整连接池的大小。
 
